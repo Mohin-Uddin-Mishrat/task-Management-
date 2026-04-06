@@ -1,0 +1,11 @@
+TaskStatus {
+    IN_PROGRESS
+    TODO
+    DONE
+}
+model task {
+  id          String       @id @default(uuid())
+  title  String 
+  assignee String 
+  status  TaskStatus default
+}
