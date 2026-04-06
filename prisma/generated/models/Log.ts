@@ -317,6 +317,18 @@ export type LogOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type StringFieldUpdateOperationsInput = {
+  set?: string
+}
+
+export type DateTimeFieldUpdateOperationsInput = {
+  set?: Date | string
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 export type LogCreateNestedManyWithoutUserInput = {
   create?: Prisma.XOR<Prisma.LogCreateWithoutUserInput, Prisma.LogUncheckedCreateWithoutUserInput> | Prisma.LogCreateWithoutUserInput[] | Prisma.LogUncheckedCreateWithoutUserInput[]
   connectOrCreate?: Prisma.LogCreateOrConnectWithoutUserInput | Prisma.LogCreateOrConnectWithoutUserInput[]
