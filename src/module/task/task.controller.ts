@@ -37,7 +37,7 @@ export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Post()
-  @Roles('admin')
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Create a task (Admin)' })
   async createTask(
     @Body() dto: CreateTaskDto,
@@ -55,7 +55,7 @@ export class TaskController {
   }
 
   @Patch(':id')
-  @Roles('admin')
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Edit a task (Admin)' })
   async updateTask(
     @Param('id') id: string,
@@ -74,7 +74,7 @@ export class TaskController {
   }
 
   @Delete(':id')
-  @Roles('admin')
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Delete a task (Admin)' })
   async deleteTask(
     @Param('id') id: string,
@@ -92,7 +92,7 @@ export class TaskController {
   }
 
   @Patch(':id/status')
-  @Roles('user')
+  @Roles('USER')
   @ApiOperation({ summary: 'Update task status (User)' })
   async updateTaskStatus(
     @Param('id') id: string,
@@ -111,7 +111,7 @@ export class TaskController {
   }
 
   @Get('logs')
-  @Roles('admin')
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Get paginated audit logs (Admin)' })
   async getAllLogs(
     @Query() query: GetAllLogsQueryDto,
@@ -145,7 +145,7 @@ export class TaskController {
   }
 
   @Get()
-  @Roles('admin')
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Get paginated tasks (Admin)' })
   async getAllTasks(
     @Query() query: GetAllTasksQueryDto,
