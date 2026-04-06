@@ -1,11 +1,17 @@
-TaskStatus {
-    IN_PROGRESS
-    TODO
-    DONE
+enum TaskStatus {
+  IN_PROGRESS
+  TODO
+  DONE
 }
-model task {
-  id          String       @id @default(uuid())
-  title  String 
-  assignee String 
-  status  TaskStatus default
+
+model Task {
+  id        String     @id @default(uuid())
+  title     String
+  status    TaskStatus @default(TODO)
+
+  assigneeId String?
+  assignee   User?   @relation(fields: [assigneeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
