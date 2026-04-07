@@ -138,4 +138,13 @@ export class AuthService {
 
     return sanitizeAuthUser(user);
   }
+
+  async getAllUsers() {
+    return this.prisma.client.user.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+  }
 }

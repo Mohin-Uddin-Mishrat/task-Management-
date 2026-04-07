@@ -103,4 +103,17 @@ export class AuthController {
       data: result,
     });
   }
+
+  @Get('users')
+  @ApiOperation({ summary: 'Get all users with only id and name' })
+  async getAllUsers(@Res() res: Response) {
+    const result = await this.authService.getAllUsers();
+
+    return sendResponse(res, {
+      statusCode: HttpStatus.OK,
+      success: true,
+      message: 'Users retrieved successfully',
+      data: result,
+    });
+  }
 }
