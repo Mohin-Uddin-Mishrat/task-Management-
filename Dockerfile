@@ -1,50 +1,36 @@
-# ====== BUILD STAGE ======
-FROM node:24-slim AS builder
+FROM node:22-bookworm-slim AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies for build
-RUN apt update && apt install -y openssl
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy package, lock file & prisma folder
 COPY package*.json ./
 COPY prisma.config.ts ./
 COPY prisma ./prisma
 
-# Install dependencies
-RUN npm install
+RUN npm ci
 
-# Copy rest of the project files
 COPY . .
 
-# Build the app (NestJS -> dist/)
-RUN npm run build
+RUN npx prisma generate && npm run build
 
-# ====== PRODUCTION STAGE ======
-FROM node:24-slim AS production
+FROM node:22-bookworm-slim AS runtime
 
-# Enable corepack and activate pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies needed at runtime
-RUN apt update && apt install -y openssl curl
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy necessary files from builder stage
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/package-lock.json ./package-lock.json
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma.config.ts ./
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-# Install dependencies
-RUN npm install
+EXPOSE 5000
 
-# Expose the port
-EXPOSE 3000
-
-# Run the app
-CMD ["npm", "run", "start"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]

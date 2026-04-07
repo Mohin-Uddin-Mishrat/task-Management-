@@ -1,79 +1,64 @@
 services:
   api:
-    profiles: ['prod']
-    platform: linux/amd64
-    image: softvence/vandanakalra-backend:latest
-    container_name: ${PACKAGE_NAME}_api
-    restart: always
-    env_file:
-      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${PACKAGE_NAME:-task}_api
+    restart: unless-stopped
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/${PACKAGE_NAME}_db
-
-      BASE_URL: http://0.0.0.0:3000
-      PORT: 3000
-    ports:
-      - '3000:3000'
+      PORT: ${PORT:-5000}
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/${POSTGRES_DB:-task_db}
+      SALT_ROUND: ${SALT_ROUND:-10}
+      ACCESS_TOKEN_SECRET: ${ACCESS_TOKEN_SECRET:-local-access-secret}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-local-refresh-secret}
+      ACCESS_TOKEN_EXPIREIN: ${ACCESS_TOKEN_EXPIREIN:-3650d}
+      REFRESH_TOKEN_EXPIREIN: ${REFRESH_TOKEN_EXPIREIN:-30d}
+      email: ${ADMIN_EMAIL:-admin@example.com}
+      name: ${ADMIN_NAME:-admin}
+      password: ${ADMIN_PASSWORD:-123456}
+      role: ${ADMIN_ROLE:-ADMIN}
     depends_on:
       db:
         condition: service_healthy
-    command: >
-      sh -c "
-        echo '🏁 Waiting for DB...';
-        sleep 5;
-        npx prisma migrate deploy;
-        echo '🚀 Starting app...';
-        npm run start
-      "
+    ports:
+      - "${PORT:-5000}:5000"
     volumes:
-      - files-data:/app/uploads
-      - temp-data:/app/tmp
-      - logs-data:/app/logs
+      - uploads_data:/app/uploads
 
   db:
-    profiles: ['dev', 'prod']
     image: postgres:17
-    container_name: ${PACKAGE_NAME}_db
-    restart: always
-    user: postgres
+    container_name: ${PACKAGE_NAME:-task}_db
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: ${PACKAGE_NAME}_db
-    volumes:
-      - db_data:/var/lib/postgresql/data
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-task_db}
     ports:
-      - '127.0.0.1:5434:5432'
+      - "${POSTGRES_PORT:-5434}:5432"
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-task_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   pgadmin:
-    image: dpage/pgadmin4
-    container_name: ${PACKAGE_NAME}_pgadmin
-    restart: always
-    profiles: ['prod']
+    profiles: ["tools"]
+    image: dpage/pgadmin4:9
+    container_name: ${PACKAGE_NAME:-task}_pgadmin
+    restart: unless-stopped
     environment:
-      - PGADMIN_DEFAULT_EMAIL=${ADMIN_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${ADMIN_PASSWORD}
-      - SCRIPT_NAME=/pgadmin
-    ports:
-      - '8123:80'
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
     depends_on:
       db:
         condition: service_healthy
+    ports:
+      - "${PGADMIN_PORT:-8123}:80"
 
 volumes:
-  db_data:
-  files-data:
-  temp-data:
-  logs-data:
-
-networks:
-  default:
-    name: ${PACKAGE_NAME}_network
-    labels:
-      - 'project=${PACKAGE_NAME}'
+  postgres_data:
+  uploads_data:
