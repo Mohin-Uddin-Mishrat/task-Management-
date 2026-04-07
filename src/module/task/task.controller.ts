@@ -21,6 +21,7 @@ import { GetAllTasksQueryDto } from './dto/get-all-tasks-query.dto';
 import { UpdateTaskStatusDto } from './dto/update-task-status.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskService } from './task.service';
+import { Role } from '@prisma';
 
 type AuthenticatedRequest = Request & {
   user: {
@@ -55,7 +56,7 @@ export class TaskController {
   }
 
   @Patch(':id')
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Edit a task (Admin)' })
   async updateTask(
     @Param('id') id: string,
@@ -74,7 +75,7 @@ export class TaskController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete a task (Admin)' })
   async deleteTask(
     @Param('id') id: string,
@@ -92,7 +93,7 @@ export class TaskController {
   }
 
   @Patch(':id/status')
-  @Roles('USER')
+  @Roles(Role.USER)
   @ApiOperation({ summary: 'Update task status (User)' })
   async updateTaskStatus(
     @Param('id') id: string,
@@ -111,7 +112,7 @@ export class TaskController {
   }
 
   @Get('logs')
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get paginated audit logs (Admin)' })
   async getAllLogs(
     @Query() query: GetAllLogsQueryDto,
@@ -145,7 +146,7 @@ export class TaskController {
   }
 
   @Get()
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Get paginated tasks (Admin)' })
   async getAllTasks(
     @Query() query: GetAllTasksQueryDto,
